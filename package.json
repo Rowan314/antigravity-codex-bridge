@@ -1,0 +1,16 @@
+{
+  "name": "antigravity-codex-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Asynchronous two-way MCP bridge between running Antigravity and Codex conversations.",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "mcp": "node scripts/mcp.mjs",
+    "install:bridge": "node scripts/install.mjs"
+  },
+  "license": "MIT"
+}

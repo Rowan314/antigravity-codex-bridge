@@ -1,0 +1,49 @@
+{
+  "name": "antigravity-codex-bridge",
+  "description": "Asynchronous two-way messaging between running Antigravity and Codex conversations over MCP.",
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "codex",
+    "messaging",
+    "mcp",
+    "bridge"
+  ],
+  "skills": "./skills/",
+  "mcpServers": {
+    "antigravity-codex-bridge": {
+      "command": "node",
+      "cwd": "./",
+      "args": ["./scripts/mcp.mjs"],
+      "env": {
+        "AGY_CODEX_BRIDGE_HOST": "codex"
+      },
+      "env_vars": [
+        "CODEX_APP_TOOLS_PIPE_PATH",
+        "CODEX_THREAD_ID",
+        "CODEX_HOME",
+        "HOME",
+        "USERPROFILE",
+        "PATH",
+        "AGY_CODEX_BRIDGE_STATE_DIR",
+        "AGY_CODEX_BRIDGE_CODEX_BIN",
+        "AGY_CODEX_BRIDGE_DAEMON"
+      ]
+    }
+  },
+  "interface": {
+    "displayName": "Antigravity–Codex Bridge",
+    "shortDescription": "Send asynchronous messages between Antigravity and Codex.",
+    "longDescription": "Discover running conversations and exchange asynchronous messages between Antigravity (App, CLI, IDE) and Codex (CLI, Desktop) over local MCP tools without version pinning.",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "List local Antigravity conversations and send a message to the one I name.",
+      "Reply to the Antigravity conversation that sent me the latest bridge message.",
+      "Run bridge_doctor to check Antigravity and Codex bridge connectivity."
+    ]
+  }
+}

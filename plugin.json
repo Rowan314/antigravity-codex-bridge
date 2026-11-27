@@ -1,0 +1,12 @@
+{
+  "name": "antigravity-codex-bridge",
+  "displayName": "Antigravity–Codex Bridge",
+  "version": "1.0.0",
+  "logo": "assets/logo.svg",
+  "description": "Asynchronous two-way messaging between running Antigravity and Codex conversations over MCP.",
+  "suggestedPrompts": [
+    "List my active Codex threads and send a progress update to one of them",
+    "Reply to the Codex thread that sent the latest bridge message",
+    "Run bridge_doctor to check Antigravity and Codex bridge connectivity"
+  ]
+}

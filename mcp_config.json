@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "bridge": {
+      "command": "/bin/sh",
+      "args": ["${PLUGIN_ROOT}/scripts/run-mcp.sh"],
+      "cwd": "${PLUGIN_ROOT}",
+      "env": {
+        "AGY_CODEX_BRIDGE_HOST": "antigravity"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+.DS_Store
+node_modules/
+work/
+*.log
+/WORKLOG.md
+/.env
+/.env.*
