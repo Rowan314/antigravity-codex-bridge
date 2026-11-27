@@ -9,7 +9,9 @@ import { createBridgeService } from '../lib/service/bridge-service.mjs';
 import { dispatchMessageToCodex } from '../lib/service/codex-router.mjs';
 import { registerCodexDesktopHost } from '../lib/state/host-registry.mjs';
 import { ThreadNotLoadedError } from '../lib/transports/codex-daemon.mjs';
-import { listDesktopThreads, sendToDesktopThread } from '../lib/transports/codex-desktop.mjs';
+import {
+  createCodexDesktopThread, listDesktopThreads, prepareCodexDesktopDispatch, sendToDesktopThread,
+} from '../lib/transports/codex-desktop.mjs';
 
 function encodeFrame(obj) {
   const payload = Buffer.from(JSON.stringify(obj), 'utf8');
@@ -150,4 +152,66 @@ test('codex-desktop discovers capabilities via tools/list and sends over Unix so
     server.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('native Codex dispatch checks project and speed before creating and requires a local receipt', async t => {
+  if (process.platform === 'win32') return;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdx-dispatch-'));
+  const pipePath = path.join(dir, 'app-tools.sock');
+  const project = { projectId: 'local-project', projectKind: 'local', hostId: 'local', path: '/repo' };
+  let requested = null;
+  let supportsSpeed = true;
+  let returnsReceipt = true;
+  const server = net.createServer(socket => {
+    let buf = Buffer.alloc(0);
+    socket.on('data', chunk => {
+      buf = Buffer.concat([buf, chunk]);
+      if (buf.length < 4 || buf.length < 4 + buf.readUInt32LE(0)) return;
+      const msg = JSON.parse(buf.subarray(4).toString('utf8'));
+      let result;
+      if (msg.method === 'tools/list') {
+        const properties = {
+          target: {}, title: {}, prompt: {}, model: {}, thinking: {},
+          ...(supportsSpeed ? { fast: { type: 'boolean' } } : {}),
+        };
+        result = { tools: [
+          { name: 'list_projects', namespace: 'codex_app' },
+          { name: 'create_thread', namespace: 'codex_app', inputSchema: { properties } },
+        ] };
+      } else {
+        const listing = msg.params.tool === 'list_projects';
+        if (!listing) requested = msg.params;
+        const payload = listing ? { projects: [project] }
+          : returnsReceipt ? { threadId: 'new-1', hostId: 'local' } : { clientThreadId: 'queued-1' };
+        result = { success: true, contentItems: [{ type: 'inputText', text: JSON.stringify(payload) }] };
+      }
+      socket.end(encodeFrame({ jsonrpc: '2.0', id: msg.id, result }));
+    });
+  });
+  await new Promise(resolve => server.listen(pipePath, resolve));
+  t.after(async () => {
+    await new Promise(resolve => server.close(resolve));
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+  const host = { pipePath, contextThreadId: 'ctx-1' };
+  await assert.rejects(prepareCodexDesktopDispatch(host, { projectId: 'incorrect' }),
+    { reason: 'target_unavailable' });
+  assert.equal(requested, null);
+  const prepared = await prepareCodexDesktopDispatch(host, { projectId: project.projectId });
+  const opts = { title: 'Test', text: 'Authorized first task', messageId: 'dispatch-1' };
+  assert.deepEqual(await createCodexDesktopThread(prepared, opts), { id: 'new-1', transport: 'desktop' });
+  assert.equal(requested.callerSource, 'antigravity');
+  assert.deepEqual(requested.arguments, {
+    title: 'Test',
+    prompt: 'Authorized first task',
+    target: { type: 'project', projectId: project.projectId, environment: { type: 'local' } },
+    model: 'gpt-6.2-sol',
+    thinking: 'high',
+    fast: false,
+  });
+  returnsReceipt = false;
+  await assert.rejects(createCodexDesktopThread(prepared, opts), { reason: 'delivery_unconfirmed' });
+  supportsSpeed = false;
+  await assert.rejects(prepareCodexDesktopDispatch(host, { projectId: project.projectId }),
+    { reason: 'protocol_incompatible' });
 });

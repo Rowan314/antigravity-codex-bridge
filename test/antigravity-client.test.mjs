@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  createAntigravityConversation,
   getAntigravityConversation,
   listAntigravityConversations,
   probeAntigravityHost,
@@ -105,8 +106,12 @@ fs.writeFileSync(${JSON.stringify(captureFile)}, JSON.stringify({
   args,
   addr: process.env.ANTIGRAVITY_LS_ADDRESS,
   token: process.env.ANTIGRAVITY_CSRF_TOKEN,
+  projectId: process.env.ANTIGRAVITY_PROJECT_ID,
 }));
-process.stdout.write(JSON.stringify({ ok: true }) + '\\n');
+const response = args[0] === 'new-conversation' && !args.includes('malformed receipt')
+  ? { response: { newConversation: { conversationId: '0159c1b2-aaaa-bbbb-cccc-111111111111', prompt: args.at(-1) } } }
+  : { ok: true };
+process.stdout.write(JSON.stringify(response) + '\\n');
 `,
     { mode: 0o755 },
   );
@@ -137,6 +142,21 @@ process.stdout.write(JSON.stringify({ ok: true }) + '\\n');
     assert.deepEqual(captured.args, ['send-message', '--title=Codex Update', 'conv-main-1', 'Hello Antigravity']);
     assert.equal(captured.addr, address);
     assert.equal(captured.token, token);
+
+    const createOptions = {
+      command: { command: fakeAgentapi, prefixArgs: [] },
+      projectId: 'proj-1',
+      title: 'New Task',
+      text: 'Start test',
+      env: process.env,
+    };
+    const created = await createAntigravityConversation(host, createOptions);
+    assert.equal(created.id, '0159c1b2-aaaa-bbbb-cccc-111111111111');
+    const newCall = JSON.parse(fs.readFileSync(captureFile, 'utf8'));
+    assert.equal(newCall.projectId, 'proj-1');
+    assert.deepEqual(newCall.args, ['new-conversation', '--title=New Task', '--', 'Start test']);
+    await assert.rejects(createAntigravityConversation(host, { ...createOptions, text: 'malformed receipt' }),
+      { reason: 'delivery_unconfirmed' });
 
     // Missing conversation maps cleanly to target_unavailable (pre-write failure)
     await assert.rejects(

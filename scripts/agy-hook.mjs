@@ -9,6 +9,7 @@ import { resolveStateDir } from '../lib/state/state-dir.mjs';
 
 const BRIDGE_TOOL_NAMES = new Set([
   'send_to_codex',
+  'dispatch_to_codex',
   'send_to_antigravity',
   'list_codex_threads',
   'list_antigravity_conversations',

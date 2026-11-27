@@ -85,7 +85,7 @@ test('MCP server negotiates future protocol versions cleanly and completes two-w
 
     const listedTools = await agyCall('tools/list');
     const names = listedTools.result.tools.map(t => t.name);
-    assert.deepEqual(names, ['list_codex_threads', 'send_to_codex', 'list_deliveries', 'bridge_doctor']);
+    assert.deepEqual(names, ['dispatch_to_codex', 'list_codex_threads', 'send_to_codex', 'list_deliveries', 'bridge_doctor']);
 
     const threadsRes = await agyCall('tools/call', { name: 'list_codex_threads', arguments: {} });
     assert.equal(threadsRes.result.structuredContent.threads.length, 1);
@@ -177,7 +177,7 @@ test('MCP server negotiates future protocol versions cleanly and completes two-w
     const cdxTools = await cdxCall('tools/list');
     assert.deepEqual(
       cdxTools.result.tools.map(t => t.name),
-      ['list_antigravity_conversations', 'send_to_antigravity', 'list_deliveries', 'bridge_doctor'],
+      ['dispatch_to_antigravity', 'list_antigravity_conversations', 'send_to_antigravity', 'list_deliveries', 'bridge_doctor'],
     );
 
     const replyRes = await cdxCall('tools/call', {

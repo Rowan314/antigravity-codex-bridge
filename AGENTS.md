@@ -22,12 +22,13 @@ antigravity-codex-bridge/
 │   ├── mcp.mjs                 # 标准 stdio MCP JSON-RPC 2.0 服务入口
 │   ├── run-mcp.sh              # 跨 PATH Node 启动包装器（兼容 macOS GUI 进程）
 │   ├── agy-hook.mjs            # Antigravity Hook 入口
+│   ├── codex-app-ui.swift      # macOS 原生 Accessibility 核验与提交助手（按哈希编译缓存）
 │   └── install.mjs             # 双端安装/卸载与本地注册管理
 ├── lib/
 │   ├── core/                   # 结果模型、消息信封、调用预算、WebSocket、本地 Socket
 │   ├── state/                  # 状态目录、跨进程文件锁、主机注册表、幂等投递账本
-│   ├── transports/             # Antigravity HTTP/agentapi 与 Codex daemon/queue/desktop 适配
-│   └── service/                # 调用方身份识别、Codex 路由、只读诊断与桥接工具编排
+│   ├── transports/             # Antigravity HTTP/agentapi 与 Codex daemon/queue/desktop/app-native 适配
+│   └── service/                # 调用方身份识别、Codex 路由、只读诊断、双向派单与桥接编排
 └── test/                       # 基于 node:test 的自动化测试套件
 ```
 

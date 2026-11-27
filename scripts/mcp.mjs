@@ -13,7 +13,34 @@ const SUPPORTED_MCP_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-
 const MAX_LINE_BYTES = 2 * 1024 * 1024;
 const MAX_OUTSTANDING = 32;
 
+const DISPATCH_INPUT = {
+  type: 'object',
+  properties: {
+    project_id: { type: 'string', minLength: 1, maxLength: 128, description: 'Exact project ID on the receiving application.' },
+    title: { type: 'string', minLength: 1, maxLength: 120 },
+    message: { type: 'string', minLength: 1, maxLength: 65536 },
+    authorization_ref: { type: 'string', minLength: 1, maxLength: 2048, description: 'Verifiable reference to the user’s existing authorization. A reference does not grant permission.' },
+    message_id: { type: 'string', pattern: '^[a-zA-Z0-9_-]{1,100}$', description: 'Fresh dispatch ID. Keep it unchanged when retrying the exact dispatch.' },
+    retry_failed: { type: 'boolean' },
+    include_message: { type: 'boolean', default: false },
+  },
+  required: ['project_id', 'title', 'message', 'authorization_ref', 'message_id'],
+  additionalProperties: false,
+};
+
 const TOOL_DEFINITIONS = [
+  {
+    name: 'dispatch_to_codex',
+    host: 'antigravity',
+    description: 'Create a native Codex App chat in an existing local project and deliver an authorized task as its first message.',
+    inputSchema: DISPATCH_INPUT,
+  },
+  {
+    name: 'dispatch_to_antigravity',
+    host: 'codex',
+    description: 'Create a main Antigravity conversation in an existing local project and deliver an authorized task as its first message.',
+    inputSchema: DISPATCH_INPUT,
+  },
   {
     name: 'list_codex_threads',
     host: 'antigravity',
